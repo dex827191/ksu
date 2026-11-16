@@ -1,0 +1,16 @@
+tunnel:
+  name: tun0
+  mtu: 8500
+  ipv4: 198.18.0.1
+  ipv6: 'fc00::1'
+  icmp: 'off'
+socks5:
+  address: 127.0.0.1
+  port: 10808
+  udp: 'udp'
+  mark: 438
+misc:
+  log-file: /data/adb/sshprotocol/logs/hev.log
+  log-level: info
+  connect-timeout: 10000
+  limit-nofile: 65535

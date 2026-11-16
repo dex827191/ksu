@@ -1,0 +1,77 @@
+name: Build SSH Protocol KSU
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goarch: arm64
+            ndk_triple: aarch64-linux-android
+            api: 21
+          - goarch: arm
+            ndk_triple: armv7a-linux-androideabi
+            api: 21
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+          cache: true
+      - uses: android-actions/setup-android@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build KernelSU WebUI bundle
+        run: |
+          cd webui
+          npm install
+          npm run build
+      - name: Install Android NDK
+        run: sdkmanager "ndk;27.2.12479018"
+      - name: Install Android NDK
+        run: sdkmanager "ndk;27.2.12479018"
+      - name: Build Go SSH engine
+        shell: bash
+        run: |
+          set -euxo pipefail
+          NDK="$ANDROID_HOME/ndk/27.2.12479018"
+          TOOL="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          export GOOS=android GOARCH=${{ matrix.goarch }} GOARM=7 CGO_ENABLED=1
+          export CC="$TOOL/${{ matrix.ndk_triple }}${{ matrix.api }}-clang"
+          go mod tidy
+          go build -trimpath -ldflags="-s -w" -o module/bin/sshprotocol ./cmd/sshprotocol
+      - name: Build HEV for Android
+        shell: bash
+        run: |
+          set -euxo pipefail
+          NDK="$ANDROID_HOME/ndk/27.2.12479018"
+          TOOL="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          git clone --depth 1 --recursive https://github.com/heiher/hev-socks5-tunnel /tmp/hev
+          cd /tmp/hev
+          make \
+            CC="$TOOL/${{ matrix.ndk_triple }}${{ matrix.api }}-clang" \
+            PP="$TOOL/${{ matrix.ndk_triple }}${{ matrix.api }}-clang -E" \
+            AR="$TOOL/llvm-ar" \
+            STRIP="$TOOL/llvm-strip" \
+            exec
+          install -D -m 0755 bin/hev-socks5-tunnel "$GITHUB_WORKSPACE/module/bin/hev-socks5-tunnel"
+      - name: Assemble KernelSU module ZIP
+        run: |
+          set -eux
+          chmod 0755 module/*.sh module/bin/*
+          cd module
+          zip -r "../SSHProtocol-KSU-${{ matrix.goarch }}.zip" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SSHProtocol-KSU-${{ matrix.goarch }}
+          path: SSHProtocol-KSU-${{ matrix.goarch }}.zip

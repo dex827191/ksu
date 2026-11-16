@@ -1,0 +1,13 @@
+{
+  "name": "sshprotocol-ksu-webui",
+  "private": true,
+  "scripts": {
+    "build": "esbuild main.js --bundle --format=iife --outfile=../module/webroot/app.js"
+  },
+  "dependencies": {
+    "kernelsu": "latest"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

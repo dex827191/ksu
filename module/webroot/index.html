@@ -1,0 +1,42 @@
+<!doctype html>
+<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>SSH Protocol KSU</title>
+<style>
+:root{color-scheme:dark}body{font:15px system-ui;background:#10141c;color:#e9eef7;margin:0;padding:16px}
+.card{background:#1a2230;border:1px solid #303c50;border-radius:12px;padding:14px;margin:12px 0}
+button,select,input,textarea{font:inherit;border-radius:8px;border:1px solid #46546b;padding:10px;background:#111925;color:#fff;width:100%;box-sizing:border-box;margin:5px 0}
+button{background:#2563eb;border:0;font-weight:650}.stop{background:#b42318}.secondary{background:#35445b}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto;background:#080c12;padding:10px;border-radius:8px}
+small{color:#aab7ca}.status{font-weight:700;color:#8bd5a5}.muted{color:#aab7ca}
+</style></head><body>
+<h2>SSH Protocol KSU</h2>
+<div class="card"><b>Status: </b><span class="status" id="status">Loading...</span>
+<div class="three"><button onclick="action('start')">START</button><button class="stop" onclick="action('stop')">STOP</button><button class="secondary" onclick="action('restart')">RESTART</button></div>
+<div class="row"><button class="secondary" onclick="action('route-on')">ROUTE ON</button><button class="secondary" onclick="action('route-off')">ROUTE OFF</button></div>
+</div>
+<div class="card"><h3>Connection profile</h3>
+<label>Connection mode</label><select id="mode">
+<option value="ssh_only">SSH Only</option><option value="ssh_proxy">SSH + HTTP Proxy</option>
+<option value="ssh_sni">SSH + TLS/SNI</option><option value="ssh_proxy_payload">SSH + Proxy + Payload</option>
+<option value="ssh_payload_sni">SSH + Payload + TLS/SNI</option><option value="ssh_proxy_payload_sni">SSH + Proxy + Payload + TLS/SNI</option></select>
+<label>SSH host</label><input id="ssh_host" placeholder="server.example.com"><div class="row"><div><label>SSH port</label><input id="ssh_port" type="number" value="22"></div><div><label>Username</label><input id="username"></div></div>
+<label>Password</label><input id="password" type="password"><label>Private key PEM (optional)</label><textarea id="private_key" rows="3"></textarea>
+<h4>HTTP Proxy</h4><div class="row"><input id="proxy_host" placeholder="Proxy host"><input id="proxy_port" type="number" placeholder="Proxy port"></div>
+<div class="row"><input id="proxy_username" placeholder="Proxy username"><input id="proxy_password" type="password" placeholder="Proxy password"></div>
+<h4>TLS / SNI</h4><label>SNI hostname</label><input id="tls_server_name" placeholder="sni.example.com">
+<label>TLS version</label><select id="tls_version"><option value="default">Default</option><option value="tls_1_0">TLS 1.0 (legacy)</option><option value="tls_1_1">TLS 1.1 (legacy)</option><option value="tls_1_2">TLS 1.2</option><option value="tls_1_3">TLS 1.3</option></select>
+<h4>Payload</h4><label>Payload mode</label><select id="payload_mode"><option value="normal">Normal</option><option value="enhanced">Enhanced (split/delay)</option></select>
+<textarea id="payload" rows="5" placeholder="CONNECT [host]:[port] [protocol][crlf]Host: [host][crlf][crlf]"></textarea>
+<small>Placeholders: [host], [port], [ssh_host], [ssh_port], [host_port], [ssh], [proxy_host], [proxy_port], [proxy], [ua], [cr], [lf], [crlf], [lfcr], plus \\r and \\n. Enhanced mode: [split], [splitnodelay], [instant_split], [delay], [delay_split], [split_delay].</small>
+<h4>Security & behaviour</h4><label>SSH host-key verification</label><select id="host_key_policy"><option value="strict">Strict (recommended)</option><option value="insecure">Insecure (not recommended)</option></select>
+<div class="row"><button class="secondary" onclick="scanHostKey()">SCAN SSH HOST KEY</button><button class="secondary" onclick="loadKnownHosts()">LOAD KNOWN HOSTS</button></div>
+<label>known_hosts (OpenSSH format)</label><textarea id="known_hosts" rows="3" placeholder="Scan the server key, verify its fingerprint, then save the line here"></textarea>
+<label>Reconnect</label><select id="auto_reconnect"><option value="true">Enabled</option><option value="false">Disabled</option></select>
+<label>TCP no-delay</label><select id="tcp_no_delay"><option value="true">Enabled</option><option value="false">Disabled</option></select>
+<div class="row"><div><label>Socket send buffer</label><input id="socket_send_buffer_size" type="number" value="16384"></div><div><label>Socket receive buffer</label><input id="socket_receive_buffer_size" type="number" value="32768"></div></div>
+<div class="row"><button class="secondary" onclick="toggleFlag('auto_start')">TOGGLE AUTO START</button><button class="secondary" onclick="toggleFlag('routing.enabled')">TOGGLE ROUTING</button></div>
+<button onclick="save()">SAVE CONFIGURATION</button><small>Secrets are stored locally with file permission 0600. Strict host-key mode requires known_hosts. This SOCKS implementation supports TCP CONNECT only; UDP/UDP DNS is not tunneled yet.</small>
+</div>
+<div class="card"><h3>Traffic</h3><button class="secondary" onclick="refreshStats()">REFRESH TRAFFIC</button><pre id="stats">RX: 0 bytes\nTX: 0 bytes</pre></div>
+<div class="card"><h3>Logs</h3><button class="secondary" onclick="refreshLogs()">REFRESH LOGS</button><pre id="logs">Loading...</pre></div>
+<script src="app.js"></script></body></html>
