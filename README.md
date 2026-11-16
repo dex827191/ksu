@@ -65,3 +65,8 @@ su -c '/data/adb/modules/sshprotocol_ksu/action.sh stop'
 ## Security
 `host_key_policy` defaults to `strict`. Verify fingerprints out-of-band. The `insecure` setting disables SSH server identity verification and should only be used temporarily for isolated testing. Config and known_hosts are stored under `/data/adb/sshprotocol` with restrictive permissions.
 \n\n### GitHub Actions ARM64 build\nWorkflow ini hanya berjalan manual melalui tab Actions → Build SSH Protocol KSU (ARM64) → Run workflow. Output ZIP tersedia di bagian Artifacts pada hasil run. Target binary: Android ARM64 (arm64-v8a).\n
+## WebUI and DNS update
+
+The WebUI now provides confirmation dialogs for start/stop/restart and routing/DNS actions, live status and traffic counters, auto-refreshing combined logs, copy/clear log controls, and a network/DNS diagnostic action.
+
+HEV `mapdns` is configured at `198.18.0.2:53` with a synthetic IPv4 pool `100.64.0.0/10`. The module redirects locally generated IPv4 UDP DNS requests (port 53), excluding marked SSH transport sockets, to that HEV mapdns endpoint when DNS mapping and global routing are enabled. This is not a general DNS-over-HTTPS/DoT or IPv6 DNS proxy. General UDP forwarding through the SSH engine remains unsupported; mapped DNS is a separate HEV feature.

@@ -1,6 +1,6 @@
 id=sshprotocol_ksu
 name=SSH Protocol KSU
-version=1.0.0
-versionCode=1
+version=1.2.0
+versionCode=12
 author=Community / generated from supplied project references
-description=Standalone SSH + SOCKS5 + HEV tun2socks module for KernelSU
+description=Standalone SSH + HEV tunnel with live WebUI logs and DNS mapping

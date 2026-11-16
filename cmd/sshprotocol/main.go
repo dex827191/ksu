@@ -464,6 +464,7 @@ func sshConfig(c Config) (*ssh.ClientConfig, error) {
 
 func handleSOCKS(conn net.Conn, client *ssh.Client, lg *log.Logger) {
 	defer conn.Close()
+	lg.Printf("SOCKS5 client connected: %s", conn.RemoteAddr())
 	_ = conn.SetDeadline(time.Now().Add(15 * time.Second))
 	br := bufio.NewReader(conn)
 	h := make([]byte, 2)
@@ -537,6 +538,7 @@ func handleSOCKS(conn net.Conn, client *ssh.Client, lg *log.Logger) {
 		return
 	}
 	target := net.JoinHostPort(host, strconv.Itoa(port))
+	lg.Printf("SOCKS5 CONNECT request: %s", target)
 	ch, reqs, err := client.OpenChannel("direct-tcpip", ssh.Marshal(struct {
 		Dest    string
 		Port    uint32
@@ -549,6 +551,7 @@ func handleSOCKS(conn net.Conn, client *ssh.Client, lg *log.Logger) {
 		return
 	}
 	defer ch.Close()
+	lg.Printf("SSH channel established: %s", target)
 	go ssh.DiscardRequests(reqs)
 	_, _ = conn.Write([]byte{5, 0, 0, 1, 0, 0, 0, 0, 0, 0})
 	_ = conn.SetDeadline(time.Time{})
@@ -579,10 +582,12 @@ func runSession(ctx context.Context, c Config, lg *log.Logger) error {
 		return err
 	}
 	lg.Printf("connecting mode=%s endpoint=%s:%d", c.Mode, c.SSHHost, c.SSHPort)
+	lg.Printf("resolving/dialing SSH endpoint")
 	up, err := dialUpstream(c)
 	if err != nil {
 		return err
 	}
+	lg.Printf("upstream TCP connected; starting SSH handshake")
 	sshConn, chans, reqs, err := ssh.NewClientConn(up, net.JoinHostPort(c.SSHHost, strconv.Itoa(c.SSHPort)), sc)
 	if err != nil {
 		up.Close()

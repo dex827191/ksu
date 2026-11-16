@@ -9,6 +9,14 @@ socks5:
   port: 10808
   udp: 'udp'
   mark: 438
+# HEV synthetic DNS mapping. action.sh redirects normal UDP/53 queries
+# to this address when global routing and DNS mapping are enabled.
+mapdns:
+  address: 198.18.0.2
+  port: 53
+  network: 100.64.0.0
+  netmask: 255.192.0.0
+  cache-size: 10000
 misc:
   log-file: /data/adb/sshprotocol/logs/hev.log
   log-level: info
