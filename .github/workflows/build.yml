@@ -75,6 +75,14 @@ jobs:
           TOOL="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
           git clone --depth 1 --recursive https://github.com/heiher/hev-socks5-tunnel /tmp/hev
           cd /tmp/hev
+          # Android's sys/select.h already defines fd_set. The bundled lwIP
+          # Unix compatibility header redeclares it as __kernel_fd_set,
+          # which conflicts with the Android NDK sysroot. Remove only that
+          # redundant typedef for this Android cross-build.
+          LWIP_CC_HEADER="third-part/lwip/src/ports/unix/include/cc.h"
+          if grep -q 'typedef __kernel_fd_set fd_set;' "$LWIP_CC_HEADER"; then
+            sed -i '/typedef __kernel_fd_set fd_set;/d' "$LWIP_CC_HEADER"
+          fi
           make \
             CC="$TOOL/aarch64-linux-android21-clang" \
             PP="$TOOL/aarch64-linux-android21-clang -E" \
