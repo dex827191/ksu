@@ -83,6 +83,11 @@ jobs:
           if grep -q 'typedef __kernel_fd_set fd_set;' "$LWIP_CC_HEADER"; then
             sed -i '/typedef __kernel_fd_set fd_set;/d' "$LWIP_CC_HEADER"
           fi
+          # Android's Bionic libc provides pthread symbols directly; unlike
+          # glibc, the NDK does not ship a separate libpthread.so. HEV's
+          # upstream Makefile adds -lpthread on every non-Windows target, so
+          # remove that library flag for this Android cross-link only.
+          sed -i 's/-lpthread//g' Makefile
           make \
             CC="$TOOL/aarch64-linux-android21-clang" \
             PP="$TOOL/aarch64-linux-android21-clang -E" \
