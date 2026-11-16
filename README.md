@@ -64,3 +64,4 @@ su -c '/data/adb/modules/sshprotocol_ksu/action.sh stop'
 
 ## Security
 `host_key_policy` defaults to `strict`. Verify fingerprints out-of-band. The `insecure` setting disables SSH server identity verification and should only be used temporarily for isolated testing. Config and known_hosts are stored under `/data/adb/sshprotocol` with restrictive permissions.
+\n\n### GitHub Actions ARM64 build\nWorkflow ini hanya berjalan manual melalui tab Actions → Build SSH Protocol KSU (ARM64) → Run workflow. Output ZIP tersedia di bagian Artifacts pada hasil run. Target binary: Android ARM64 (arm64-v8a).\n
